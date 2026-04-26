@@ -92,13 +92,24 @@ scores = Q @ K.transpose (-2, -1) #B,T,16 * B,16,T --> B, T, T
 
 weights = FUNCTION.softmax (scores, dim = -1) #Output são logits
 
-output = weights @ V
+attention_output_projection = nn.Linear (head_size, num_embedding)
+attention_output = attention_output_projection(weights @ V)
 
-nn.Sequential (
+
+ffn = nn.Sequential (
     nn.Linear (num_embedding, 4 * num_embedding),
     nn.GELU(),
     nn.Linear (4 * num_embedding, num_embedding)
 )
+
+xfinal = xfinal + attention_output
+xfinal = xfinal + ffn (xfinal)
+layer_norm = nn.LayerNorm(num_embedding)
+xfinal = layer_norm(xfinal)
+
+
+print (xfinal[0])
+
 
 
 
