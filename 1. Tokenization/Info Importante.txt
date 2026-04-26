@@ -1,0 +1,3 @@
+https://huggingface.co/docs/tokenizers/api/pre-tokenizers#tokenizers.pre_tokenizers.CharDelimiterSplit
+1. Pre tokenizer
+2. Trainer
