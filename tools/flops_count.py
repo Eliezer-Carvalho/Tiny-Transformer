@@ -1,37 +1,25 @@
 import humanize
 
+#OpenAI Method
+#FLOPs são o número de operações de ponto flutuante que o modelo faz
+def flops_counter (parameters_non_embedding, tokens):
 
-def flops_counter (number_layers, number_heads, emb_dim, seq_len, vocab_size):
+    #Usa-se 6 porque tem em conta Forward (2), Backward (2) e Gradiente (2)
+    training_flops = 6 * parameters_non_embedding * tokens  #Apenas 1 step
 
-    attention_dimension = emb_dim // number_heads
-    fnn_dimension = 4 * emb_dim
+    #FLOPs por tokens é apenas Forward (2)
+    flops_token = 2 * parameters_non_embedding
 
-    attention_QKV = 6 * seq_len * emb_dim**2           
-    attention_scores = 2 * number_heads * seq_len**2 * attention_dimension 
-    attention_output = 2 * seq_len * emb_dim**2      
+    #FLOPs usados no momento de inferência
+    flops_inferência = flops_token * tokens
 
-    attention_total = attention_QKV + attention_scores + attention_output
+    print (f"Número total de FLOPs por Step de Treino -> {humanize.intword(training_flops)} ({(humanize.scientific(training_flops))})")
+    print (f"Número total de FLOPs por Token -> {humanize.intword(flops_token)} ({humanize.scientific(flops_token)})")
+    print (f"Número total de FLOPs por Inferência -> {humanize.intword(flops_inferência)} ({humanize.scientific(flops_inferência)})")
 
-    fnn_total = 2 * seq_len * (emb_dim * fnn_dimension + fnn_dimension * emb_dim)
+flops_counter (13600, 314636)
 
-    logits = 2 * seq_len * emb_dim * vocab_size
-
-
-    total_flops_per_block = number_layers * (attention_total + fnn_total) + logits #Forward
-    total_flops_per_step = total_flops_per_block * 3 #aproximação #Forward + Backward (Backprop e update dos pesos)
-    total_flops_per_token = total_flops_per_block / seq_len
-
-    print (f"Número de FLOPs por Block (Forward) --> {humanize.intword(total_flops_per_block)}FLOPs")
-    print (f"Número de FLOPs por Step de Treino (Forward + Backward) --> {humanize.intword(total_flops_per_step)}FLOPs")
-    print (f"Número de FLOPs por Token --> {humanize.intword(total_flops_per_token)}FLOPs")
-
-'''def mfu_counter (model_parameters, flops_per_token, gpu_peak_flops):
-
-    sustained_flops = flops_per_token * tokens_per_second  
-    mfu = sustained_flops / total_peak_flops 
-
-'''
-
-
-
-flops_counter (6, 16, 256, 128, 78)
+#MFLOPs	10e6
+#GFLOPs	10e9
+#TFLOPs	10e12
+#PFLOPs	10e15
